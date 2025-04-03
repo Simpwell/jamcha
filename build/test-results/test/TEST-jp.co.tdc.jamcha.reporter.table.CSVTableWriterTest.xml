@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="jp.co.tdc.jamcha.reporter.table.CSVTableWriterTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2025-04-03T14:20:45" hostname="xxxnoMacBook-Pro.local" time="0.01">
+  <properties/>
+  <testcase name="case1" classname="jp.co.tdc.jamcha.reporter.table.CSVTableWriterTest" time="0.008"/>
+  <testcase name="case2" classname="jp.co.tdc.jamcha.reporter.table.CSVTableWriterTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

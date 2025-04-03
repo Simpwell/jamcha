@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ja"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CallerAnnotationReporter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jamcha</a> &gt; <a href="index.source.html" class="el_package">jp.co.tdc.jamcha.reporter</a> &gt; <span class="el_source">CallerAnnotationReporter.java</span></div><h1>CallerAnnotationReporter.java</h1><pre class="source lang-java linenums">package jp.co.tdc.jamcha.reporter;
+
+import jp.co.tdc.jamcha.analyzer.SourceAnalyzeResult;
+import jp.co.tdc.jamcha.model.Caller;
+import jp.co.tdc.jamcha.model.CallerAnnotationExpr;
+import jp.co.tdc.jamcha.model.Type;
+import jp.co.tdc.jamcha.reporter.table.Cell;
+import jp.co.tdc.jamcha.reporter.table.Row;
+import jp.co.tdc.jamcha.reporter.table.Table;
+import jp.co.tdc.jamcha.reporter.table.TableWriter;
+import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+@RequiredArgsConstructor
+public class CallerAnnotationReporter {
+    private final TableWriter writer;
+
+    public void report(List&lt;SourceAnalyzeResult&gt; r) {
+<span class="fc" id="L22">        var rows = rows(r).collect(Collectors.toList());</span>
+<span class="fc" id="L23">        var t = new Table(rows);</span>
+<span class="fc" id="L24">        writer.write(t);</span>
+<span class="fc" id="L25">    }</span>
+
+    Stream&lt;Row&gt; rows(List&lt;SourceAnalyzeResult&gt; r) {
+<span class="fc" id="L28">        return Stream.concat(Stream.of(header()), r.stream().flatMap(this::rows));</span>
+    }
+
+    Row header() {
+<span class="fc" id="L32">        return new Row(List.of(</span>
+            new Cell(&quot;name&quot;),
+            new Cell(&quot;typePackageName&quot;),
+            new Cell(&quot;typeQualifiedName&quot;),
+            new Cell(&quot;typeName&quot;),
+            new Cell(&quot;callerLabel&quot;),
+            new Cell(&quot;callerMethodQualifiedSignature&quot;),
+            new Cell(&quot;callerMethodSignature&quot;),
+            new Cell(&quot;callerBeginLine&quot;),
+            new Cell(&quot;callerBeginColumn&quot;),
+            new Cell(&quot;callerAnnotationExpr&quot;)
+        ));
+    }
+
+    Stream&lt;Row&gt; rows(SourceAnalyzeResult r) {
+<span class="fc" id="L47">        return r.types().stream().flatMap(t -&gt; rows(r, t));</span>
+    }
+
+    Stream&lt;Row&gt; rows(SourceAnalyzeResult r, Type t) {
+<span class="fc" id="L51">        return t.callers().stream().flatMap(c -&gt; rows(r, t, c));</span>
+    }
+
+    Stream&lt;Row&gt; rows(SourceAnalyzeResult r, Type t, Caller c) {
+<span class="fc" id="L55">        return c.metadata().annotationExprs().stream().map(a -&gt; row(r, t, c, a));</span>
+    }
+
+    Row row(SourceAnalyzeResult r, Type t, Caller c, CallerAnnotationExpr a) {
+<span class="fc" id="L59">        return new Row(List.of(</span>
+<span class="fc" id="L60">            new Cell(r.name()),</span>
+<span class="fc" id="L61">            new Cell(t.metadata().packageName().value()),</span>
+<span class="fc" id="L62">            new Cell(t.metadata().qualifiedName().value()),</span>
+<span class="fc" id="L63">            new Cell(t.metadata().name().value()),</span>
+<span class="fc" id="L64">            new Cell(c.metadata().label().value()),</span>
+<span class="fc" id="L65">            new Cell(c.metadata().methodQualifiedSignature().value()),</span>
+<span class="fc" id="L66">            new Cell(c.metadata().methodSignature().value()),</span>
+<span class="fc" id="L67">            new Cell(Integer.toString(c.metadata().begin().line())),</span>
+<span class="fc" id="L68">            new Cell(Integer.toString(c.metadata().begin().column())),</span>
+<span class="fc" id="L69">            new Cell(a.value())</span>
+        ));
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

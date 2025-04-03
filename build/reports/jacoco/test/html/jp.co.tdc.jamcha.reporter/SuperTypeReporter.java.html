@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ja"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SuperTypeReporter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jamcha</a> &gt; <a href="index.source.html" class="el_package">jp.co.tdc.jamcha.reporter</a> &gt; <span class="el_source">SuperTypeReporter.java</span></div><h1>SuperTypeReporter.java</h1><pre class="source lang-java linenums">package jp.co.tdc.jamcha.reporter;
+
+import jp.co.tdc.jamcha.analyzer.SourceAnalyzeResult;
+import jp.co.tdc.jamcha.model.SuperType;
+import jp.co.tdc.jamcha.model.Type;
+import jp.co.tdc.jamcha.reporter.table.Cell;
+import jp.co.tdc.jamcha.reporter.table.Row;
+import jp.co.tdc.jamcha.reporter.table.Table;
+import jp.co.tdc.jamcha.reporter.table.TableWriter;
+import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+@RequiredArgsConstructor
+public class SuperTypeReporter {
+    private final TableWriter writer;
+
+    public void report(List&lt;SourceAnalyzeResult&gt; results) {
+<span class="fc" id="L21">        var rows = rows(results).collect(Collectors.toList());</span>
+<span class="fc" id="L22">        var t = new Table(rows);</span>
+<span class="fc" id="L23">        writer.write(t);</span>
+<span class="fc" id="L24">    }</span>
+
+    Stream&lt;Row&gt; rows(List&lt;SourceAnalyzeResult&gt; results) {
+<span class="fc" id="L27">        return Stream.concat(</span>
+<span class="fc" id="L28">            Stream.of(header()),</span>
+<span class="fc" id="L29">            results.stream().flatMap(this::rows)</span>
+        );
+    }
+
+    Row header() {
+<span class="fc" id="L34">        return new Row(List.of(</span>
+            new Cell(&quot;name&quot;),
+            new Cell(&quot;typePackageName&quot;),
+            new Cell(&quot;typeQualifiedName&quot;),
+            new Cell(&quot;typeName&quot;),
+            new Cell(&quot;typeBeginLine&quot;),
+            new Cell(&quot;typeBeginColumn&quot;),
+            new Cell(&quot;superTypeQualifiedName&quot;)
+        ));
+    }
+
+    Stream&lt;Row&gt; rows(SourceAnalyzeResult r) {
+<span class="fc" id="L46">        return r.types().stream().flatMap(t -&gt; rows(r, t));</span>
+    }
+
+    Stream&lt;Row&gt; rows(SourceAnalyzeResult r, Type t) {
+<span class="fc" id="L50">        return t.metadata().superTypes().stream().map(s -&gt; row(r, t, s));</span>
+    }
+
+    Row row(SourceAnalyzeResult r, Type t, SuperType s) {
+<span class="fc" id="L54">        return new Row(List.of(</span>
+<span class="fc" id="L55">            new Cell(r.name()),</span>
+<span class="fc" id="L56">            new Cell(t.metadata().packageName().value()),</span>
+<span class="fc" id="L57">            new Cell(t.metadata().qualifiedName().value()),</span>
+<span class="fc" id="L58">            new Cell(t.metadata().name().value()),</span>
+<span class="fc" id="L59">            new Cell(Integer.toString(t.metadata().begin().line())),</span>
+<span class="fc" id="L60">            new Cell(Integer.toString(t.metadata().begin().column())),</span>
+<span class="fc" id="L61">            new Cell(s.qualifiedName().value())</span>
+        ));
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
