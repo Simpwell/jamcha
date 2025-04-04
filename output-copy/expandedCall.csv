@@ -35,27 +35,10 @@ p04.T01,E02,java.lang.Math.ceil(double),
 p01.T01,"p01.T01.m02(int, int)",java.io.PrintStream.println(int),
 p01.T01,"p01.T01.m03(double, double)",java.lang.Math.floor(double),
 p01.T01,"p01.T01.m03(double, double)",java.lang.Math.ceil(double),
-p06.T03,p06.T03.m01(int),p06.T01.m01(int),
 p06.T01,p06.T01.m01(int),java.io.PrintStream.println(int),
-p06.T03,p06.T03.m01(int),java.io.PrintStream.println(int),p06.T01.m01(int)
-p06.T01,p06.T01.m01(int),p06.T02.m01(int),
-p06.T03,p06.T03.m01(int),p06.T02.m01(int),p06.T01.m01(int)
-p06.T02,p06.T02.m01(int),p06.T03.m01(int),
-p06.T02,p06.T02.m01(int),p06.T01.m01(int),p06.T03.m01(int)
-p06.T02,p06.T02.m01(int),java.io.PrintStream.println(int),p06.T03.m01(int) / p06.T01.m01(int)
-p06.T01,p06.T01.m01(int),p06.T03.m01(int),p06.T02.m01(int)
-p08.T03,p08.T03.m01(double),p08.T01.m01(double),
-p08.T03,p08.T03.m01(double),p08.T02.m01(double),
-p08.T02,p08.T02.m01(double),java.lang.Math.ceil(double),
-p08.T03,p08.T03.m01(double),java.lang.Math.ceil(double),p08.T02.m01(double)
-p08.T02,p08.T02.m01(double),java.io.PrintStream.println(double),
-p08.T03,p08.T03.m01(double),java.io.PrintStream.println(double),p08.T02.m01(double)
-p07.T03,p07.T03.m01(double),p07.T01.m01(double),
+"",p08.T02.m01(double),java.lang.Math.ceil(double),
+"",p08.T02.m01(double),java.io.PrintStream.println(double),
+"",p07.T02.m01(double),java.lang.Math.ceil(double),
+"",p07.T02.m01(double),java.io.PrintStream.println(double),
 p07.T01,p07.T01.m01(double),java.lang.Math.floor(double),
-p07.T03,p07.T03.m01(double),java.lang.Math.floor(double),p07.T01.m01(double)
 p07.T01,p07.T01.m01(double),java.io.PrintStream.println(double),
-p07.T03,p07.T03.m01(double),java.io.PrintStream.println(double),p07.T01.m01(double)
-p07.T03,p07.T03.m01(double),p07.T02.m01(double),
-p07.T02,p07.T02.m01(double),java.lang.Math.ceil(double),
-p07.T03,p07.T03.m01(double),java.lang.Math.ceil(double),p07.T02.m01(double)
-p07.T02,p07.T02.m01(double),java.io.PrintStream.println(double),

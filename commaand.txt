@@ -1,0 +1,1 @@
+java -cp build/libs/jamcha-0.0.1-all.jar jp.co.tdc.jamcha.cmd.Main -i /Users/xxx/jamcha/examples/basic/src/main/java -s /Users/xxx/jamcha/examples/basic/src/main/java -o output
