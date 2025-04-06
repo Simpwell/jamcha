@@ -8,6 +8,7 @@ _JAva Method Call Hierarchy Analyzer_
 
 - GradleからMavenに移行
 - Dockerファイル関連を削除
+- GitHub Actionsワークフロー削除（.githubディレクトリを削除）
 
 ## 概要
 
