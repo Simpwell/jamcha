@@ -2,6 +2,15 @@
 
 _JAva Method Call Hierarchy Analyzer_
 
+このリポジトリは [tdcyamadaya/jamcha](https://github.com/tdcyamadaya/jamcha.git) のフォークです。
+
+## 変更点
+
+- GradleからMavenに移行
+- Dockerファイル関連を削除
+
+## 概要
+
 コードレビューを補助するために、
 Java ソースコードを解析してメソッドの呼び出し階層を再帰的に分析可能なテーブルを出力する
 コマンドラインツールです。
