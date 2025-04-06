@@ -95,7 +95,7 @@ public class TypeMetadataResolver {
 
     SuperType superType(ClassOrInterfaceType t) {
         try {
-            return superTypeWithResolved(t.resolve());
+            return superTypeWithResolved((ResolvedReferenceType) t.resolve());
         } catch (Throwable e) {
             log.atFinest().withCause(e).log("super type resolve error");
             return superTypeWithUnesolved();
