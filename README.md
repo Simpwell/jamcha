@@ -6,6 +6,7 @@ _JAva Method Call Hierarchy Analyzer_
 
 ## 変更点
 
+- Update JavaParser to version 3.26.4
 - GradleからMavenに移行
 - Dockerファイル関連を削除
 - GitHub Actionsワークフロー削除（.githubディレクトリを削除）
