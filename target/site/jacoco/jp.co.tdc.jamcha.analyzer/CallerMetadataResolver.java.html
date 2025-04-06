@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ja"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CallerMetadataResolver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jamcha</a> &gt; <a href="index.source.html" class="el_package">jp.co.tdc.jamcha.analyzer</a> &gt; <span class="el_source">CallerMetadataResolver.java</span></div><h1>CallerMetadataResolver.java</h1><pre class="source lang-java linenums">package jp.co.tdc.jamcha.analyzer;
+
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.nodeTypes.NodeWithSimpleName;
+import com.github.javaparser.resolution.declarations.ResolvedConstructorDeclaration;
+import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
+import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
+import jp.co.tdc.jamcha.model.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
+import lombok.extern.flogger.Flogger;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+<span class="fc" id="L18">@Flogger</span>
+<span class="fc" id="L19">public class CallerMetadataResolver {</span>
+<span class="fc" id="L20">    private final ResolveMetadataHelper resolveMetadataHelper = new ResolveMetadataHelper();</span>
+
+    public CallerMetadata resolve(BodyDeclaration&lt;?&gt; d) {
+<span class="fc" id="L23">        var nr = resolveNameRecord(d);</span>
+<span class="fc" id="L24">        var b = resolveMetadataHelper.begin(d);</span>
+<span class="fc" id="L25">        var a = callerAnnotationExpr(d);</span>
+<span class="fc" id="L26">        return new CallerMetadata(nr.label(), nr.methodQualifiedSignature(), nr.methodSignature(), b, a);</span>
+    }
+
+    @RequiredArgsConstructor
+    @Getter
+    @Accessors(fluent = true)
+    static class NameRecord {
+        private final CallerLabel label;
+        private final MethodQualifiedSignature methodQualifiedSignature;
+        private final MethodSignature methodSignature;
+    }
+
+    NameRecord resolveNameRecord(BodyDeclaration&lt;?&gt; d) {
+<span class="fc bfc" id="L39" title="All 2 branches covered.">        if (d.isConstructorDeclaration()) { return resolveNameRecordInternal(d.asConstructorDeclaration()); }</span>
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        if (d.isEnumConstantDeclaration()) { return resolveNameRecordInternal(d.asEnumConstantDeclaration()); }</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        if (d.isFieldDeclaration()) { return resolveNameRecordInternal(d.asFieldDeclaration()); }</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        if (d.isInitializerDeclaration()) { return resolveNameRecordInternal(); }</span>
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">        if (d.isMethodDeclaration()) { return resolveNameRecordInternal(d.asMethodDeclaration()); }</span>
+<span class="nc" id="L44">        return new NameRecord(new CallerLabel(&quot;Unknown&quot;), new MethodQualifiedSignature(&quot;&quot;), new MethodSignature(&quot;&quot;));</span>
+    }
+
+    NameRecord resolveNameRecordInternal(ConstructorDeclaration d) {
+        try {
+<span class="fc" id="L49">            return resolveNameRecordWithResolved(d.resolve());</span>
+<span class="nc" id="L50">        } catch (Throwable e) {</span>
+<span class="nc" id="L51">            log.atFinest().withCause(e).log(&quot;caller constructor resolve error&quot;);</span>
+<span class="nc" id="L52">            return resolveNameRecordWithUnresolved(d);</span>
+        }
+    }
+
+    NameRecord resolveNameRecordWithResolved(ResolvedConstructorDeclaration d) {
+<span class="fc" id="L57">        var l = new CallerLabel(d.getQualifiedSignature());</span>
+<span class="fc" id="L58">        var mqs = new MethodQualifiedSignature(d.getQualifiedSignature());</span>
+<span class="fc" id="L59">        var ms = new MethodSignature(d.getSignature());</span>
+<span class="fc" id="L60">        return new NameRecord(l, mqs, ms);</span>
+    }
+
+    NameRecord resolveNameRecordWithUnresolved(ConstructorDeclaration d) {
+<span class="nc" id="L64">        var s = d.getDeclarationAsString();</span>
+<span class="nc" id="L65">        var c = String.format(&quot;Unresolved: %s&quot;, s);</span>
+
+<span class="nc" id="L67">        var l = new CallerLabel(d.getDeclarationAsString());</span>
+<span class="nc" id="L68">        var mqs = new MethodQualifiedSignature(&quot;&quot;);</span>
+<span class="nc" id="L69">        var ms = new MethodSignature(&quot;&quot;);</span>
+<span class="nc" id="L70">        return new NameRecord(l, mqs, ms);</span>
+    }
+
+    NameRecord resolveNameRecordInternal(EnumConstantDeclaration d) {
+<span class="fc" id="L74">        var l = new CallerLabel(d.getNameAsString());</span>
+<span class="fc" id="L75">        var mqs = new MethodQualifiedSignature(&quot;&quot;);</span>
+<span class="fc" id="L76">        var ms = new MethodSignature(&quot;&quot;);</span>
+<span class="fc" id="L77">        return new NameRecord(l, mqs, ms);</span>
+    }
+
+    NameRecord resolveNameRecordInternal(FieldDeclaration d) {
+        try {
+<span class="fc" id="L82">            return resolveNameRecordWithResolved(d.resolve());</span>
+<span class="nc" id="L83">        } catch (Throwable e) {</span>
+<span class="nc" id="L84">            log.atFinest().withCause(e).log(&quot;caller field resolve error&quot;);</span>
+<span class="nc" id="L85">            return resolveNameRecordWithUnresolved(d);</span>
+        }
+    }
+
+    NameRecord resolveNameRecordWithResolved(ResolvedFieldDeclaration d) {
+<span class="fc" id="L90">        var l = new CallerLabel(String.format(&quot;%s %s&quot;, d.declaringType().getQualifiedName(), d.getName()));</span>
+<span class="fc" id="L91">        var mqs = new MethodQualifiedSignature(&quot;&quot;);</span>
+<span class="fc" id="L92">        var ms = new MethodSignature(&quot;&quot;);</span>
+<span class="fc" id="L93">        return new NameRecord(l, mqs, ms);</span>
+    }
+
+    NameRecord resolveNameRecordWithUnresolved(FieldDeclaration d) {
+<span class="nc" id="L97">        var l = new CallerLabel(String.format(&quot;Unresolved: %s&quot;, variablesString(d.getVariables())));</span>
+<span class="nc" id="L98">        var mqs = new MethodQualifiedSignature(&quot;&quot;);</span>
+<span class="nc" id="L99">        var ms = new MethodSignature(&quot;&quot;);</span>
+<span class="nc" id="L100">        return new NameRecord(l, mqs, ms);</span>
+    }
+
+    String variablesString(NodeList&lt;VariableDeclarator&gt; l) {
+<span class="nc" id="L104">        return l.stream().map(NodeWithSimpleName::getNameAsString).collect(Collectors.joining(&quot;, &quot;));</span>
+    }
+
+    NameRecord resolveNameRecordInternal() {
+<span class="fc" id="L108">        var l = new CallerLabel(&quot;Initializer&quot;);</span>
+<span class="fc" id="L109">        var mqs = new MethodQualifiedSignature(&quot;&quot;);</span>
+<span class="fc" id="L110">        var ms = new MethodSignature(&quot;&quot;);</span>
+<span class="fc" id="L111">        return new NameRecord(l, mqs, ms);</span>
+    }
+
+    NameRecord resolveNameRecordInternal(MethodDeclaration d) {
+        try {
+<span class="fc" id="L116">            return resolveNameRecordWithResolved(d.resolve());</span>
+<span class="nc" id="L117">        } catch (Throwable e) {</span>
+<span class="nc" id="L118">            log.atFinest().withCause(e).log(&quot;caller method resolve error&quot;);</span>
+<span class="nc" id="L119">            return resolveNameRecordWithUnresolved(d);</span>
+        }
+    }
+
+    NameRecord resolveNameRecordWithResolved(ResolvedMethodDeclaration d) {
+<span class="fc" id="L124">        var l = new CallerLabel(d.getQualifiedSignature());</span>
+<span class="fc" id="L125">        var mqs = new MethodQualifiedSignature(d.getQualifiedSignature());</span>
+<span class="fc" id="L126">        var ms = new MethodSignature(d.getSignature());</span>
+<span class="fc" id="L127">        return new NameRecord(l, mqs, ms);</span>
+    }
+
+    NameRecord resolveNameRecordWithUnresolved(MethodDeclaration d) {
+<span class="nc" id="L131">        var l = new CallerLabel(d.getDeclarationAsString());</span>
+<span class="nc" id="L132">        var mqs = new MethodQualifiedSignature(&quot;&quot;);</span>
+<span class="nc" id="L133">        var ms = new MethodSignature(&quot;&quot;);</span>
+<span class="nc" id="L134">        return new NameRecord(l, mqs, ms);</span>
+    }
+
+    List&lt;CallerAnnotationExpr&gt; callerAnnotationExpr(BodyDeclaration&lt;?&gt; d) {
+<span class="fc" id="L138">        return d.getAnnotations().stream().map(a -&gt; new CallerAnnotationExpr(a.toString())).collect(Collectors.toList());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

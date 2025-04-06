@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ja"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TypeMetadataResolver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jamcha</a> &gt; <a href="index.source.html" class="el_package">jp.co.tdc.jamcha.analyzer</a> &gt; <span class="el_source">TypeMetadataResolver.java</span></div><h1>TypeMetadataResolver.java</h1><pre class="source lang-java linenums">package jp.co.tdc.jamcha.analyzer;
+
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
+import com.github.javaparser.resolution.types.ResolvedReferenceType;
+import jp.co.tdc.jamcha.model.*;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
+import lombok.extern.flogger.Flogger;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+<span class="fc" id="L21">@Flogger</span>
+<span class="fc" id="L22">public class TypeMetadataResolver {</span>
+<span class="fc" id="L23">    private final ResolveMetadataHelper resolveMetadataHelper = new ResolveMetadataHelper();</span>
+
+    public TypeMetadata resolve(TypeDeclaration&lt;?&gt; d) {
+<span class="fc" id="L26">        var nr = qualifiedName(d);</span>
+<span class="fc" id="L27">        var b = resolveMetadataHelper.begin(d);</span>
+<span class="fc" id="L28">        var s = superTypes(d);</span>
+<span class="fc" id="L29">        var a = typeAnnotationExprs(d);</span>
+<span class="fc" id="L30">        return new TypeMetadata(</span>
+<span class="fc" id="L31">            nr.packageName(),</span>
+<span class="fc" id="L32">            nr.typeQualifiedName(),</span>
+<span class="fc" id="L33">            nr.typeName(),</span>
+            b,
+            s,
+<span class="fc" id="L36">            nr.ancestorSuperTypes(),</span>
+            a);
+    }
+
+    @RequiredArgsConstructor
+    @Getter
+    @Accessors(fluent = true)
+    static class NameRecord {
+        @NonNull private final PackageName packageName;
+        @NonNull private final TypeQualifiedName typeQualifiedName;
+        @NonNull private final TypeName typeName;
+        @NonNull private final List&lt;SuperType&gt; ancestorSuperTypes;
+    }
+
+    NameRecord qualifiedName(TypeDeclaration&lt;?&gt; d) {
+        try {
+<span class="fc" id="L52">            return qualifiedNameWithResolved(d.resolve());</span>
+<span class="nc" id="L53">        } catch (Throwable e) {</span>
+<span class="nc" id="L54">            log.atFinest().withCause(e).log(&quot;type resolve error&quot;);</span>
+<span class="nc" id="L55">            return qualifiedNameWithUnresolved(d);</span>
+        }
+    }
+
+    NameRecord qualifiedNameWithResolved(ResolvedReferenceTypeDeclaration d) {
+<span class="fc" id="L60">        var pn = new PackageName(d.getPackageName());</span>
+<span class="fc" id="L61">        var qn = new TypeQualifiedName(d.getQualifiedName());</span>
+<span class="fc" id="L62">        var n = new TypeName(d.getName());</span>
+<span class="fc" id="L63">        var ast = ancestorSuperTypes(d.getAllAncestors());</span>
+<span class="fc" id="L64">        return new NameRecord(pn, qn, n, ast);</span>
+    }
+
+    List&lt;SuperType&gt; ancestorSuperTypes(List&lt;ResolvedReferenceType&gt; l) {
+<span class="fc" id="L68">        return l.stream().map(this::superTypeWithResolved).sorted().collect(Collectors.toList());</span>
+    }
+
+    NameRecord qualifiedNameWithUnresolved(TypeDeclaration&lt;?&gt; d) {
+<span class="nc" id="L72">        var pn = new PackageName(&quot;&quot;);</span>
+<span class="nc" id="L73">        var qn = new TypeQualifiedName(&quot;&quot;);</span>
+<span class="nc" id="L74">        var n = new TypeName(d.getNameAsString());</span>
+<span class="nc" id="L75">        List&lt;SuperType&gt; ast = List.of();</span>
+<span class="nc" id="L76">        return new NameRecord(pn, qn, n, ast);</span>
+    }
+
+    List&lt;SuperType&gt; superTypes(TypeDeclaration&lt;?&gt; d) {
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        if (!d.isClassOrInterfaceDeclaration()) {</span>
+<span class="nc" id="L81">            return List.of();</span>
+        }
+
+<span class="fc" id="L84">        var coid = d.asClassOrInterfaceDeclaration();</span>
+<span class="fc" id="L85">        return superTypes(coid).collect(Collectors.toList());</span>
+    }
+
+    Stream&lt;SuperType&gt; superTypes(ClassOrInterfaceDeclaration d) {
+<span class="fc" id="L89">        return Stream.concat(superTypes(d.getExtendedTypes()), superTypes(d.getImplementedTypes()));</span>
+    }
+
+    Stream&lt;SuperType&gt; superTypes(NodeList&lt;ClassOrInterfaceType&gt; l) {
+<span class="fc" id="L93">        return l.stream().map(this::superType);</span>
+    }
+
+    SuperType superType(ClassOrInterfaceType t) {
+        try {
+<span class="fc" id="L98">            return superTypeWithResolved(t.resolve());</span>
+<span class="nc" id="L99">        } catch (Throwable e) {</span>
+<span class="nc" id="L100">            log.atFinest().withCause(e).log(&quot;super type resolve error&quot;);</span>
+<span class="nc" id="L101">            return superTypeWithUnesolved();</span>
+        }
+    }
+
+    SuperType superTypeWithResolved(ResolvedReferenceType t) {
+<span class="fc" id="L106">        var tqn = new TypeQualifiedName(t.getQualifiedName());</span>
+<span class="fc" id="L107">        return new SuperType(tqn);</span>
+    }
+
+    SuperType superTypeWithUnesolved() {
+<span class="nc" id="L111">        var tqn = new TypeQualifiedName(&quot;&quot;);</span>
+<span class="nc" id="L112">        return new SuperType(tqn);</span>
+    }
+
+    List&lt;TypeAnnotationExpr&gt; typeAnnotationExprs(TypeDeclaration&lt;?&gt; d) {
+<span class="fc" id="L116">        return d.getAnnotations()</span>
+<span class="fc" id="L117">            .stream()</span>
+<span class="fc" id="L118">            .map(Node::toString)</span>
+<span class="fc" id="L119">            .map(TypeAnnotationExpr::new)</span>
+<span class="fc" id="L120">            .collect(Collectors.toList());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

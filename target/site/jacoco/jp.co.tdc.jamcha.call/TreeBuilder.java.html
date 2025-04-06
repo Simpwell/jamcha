@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ja"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TreeBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jamcha</a> &gt; <a href="index.source.html" class="el_package">jp.co.tdc.jamcha.call</a> &gt; <span class="el_source">TreeBuilder.java</span></div><h1>TreeBuilder.java</h1><pre class="source lang-java linenums">package jp.co.tdc.jamcha.call;
+
+import jp.co.tdc.jamcha.call.tree.Node;
+import jp.co.tdc.jamcha.call.tree.Tree;
+import jp.co.tdc.jamcha.model.*;
+import lombok.extern.flogger.Flogger;
+
+import java.util.List;
+
+public class TreeBuilder {
+    private static final int MAX_DEPTH = 20;
+
+    private final Tree&lt;NodeData&gt; tree;
+    private MethodQualifiedSignatureCallerMap methodQualifiedSignatureCallerMap;
+    private SubclassMap subclassMap;
+    private TypeQualifiedNameMethodSignatureCallerMap typeQualifiedNameMethodSignatureCallerMap;
+
+<span class="nc" id="L18">    public TreeBuilder() {</span>
+<span class="nc" id="L19">        tree = new Tree&lt;&gt;(newRootNodeData());</span>
+<span class="nc" id="L20">    }</span>
+
+    NodeData newRootNodeData() {
+<span class="nc" id="L23">        return new NodeData(</span>
+            new TypeQualifiedName(&quot;&quot;),
+            new CallerLabel(&quot;&quot;),
+            new MethodQualifiedSignature(&quot;&quot;),
+            new MethodSignature(&quot;&quot;)
+        );
+    }
+
+    public Tree&lt;NodeData&gt; build(List&lt;Type&gt; types) {
+<span class="nc" id="L32">        methodQualifiedSignatureCallerMap = new MethodQualifiedSignatureCallerMap(types);</span>
+<span class="nc" id="L33">        subclassMap = new SubclassMap(types);</span>
+<span class="nc" id="L34">        typeQualifiedNameMethodSignatureCallerMap = new TypeQualifiedNameMethodSignatureCallerMap(types);</span>
+<span class="nc" id="L35">        types.forEach(t -&gt; build(tree.root(), t));</span>
+<span class="nc" id="L36">        return tree;</span>
+    }
+
+    void build(Node&lt;NodeData&gt; n, Type t) {
+<span class="nc bnc" id="L40" title="All 2 branches missed.">        for (var caller : t.callers()) {</span>
+<span class="nc" id="L41">            var cn = n.add(newRootNodeData(t, caller));</span>
+<span class="nc" id="L42">            build(cn, caller, 0);</span>
+<span class="nc" id="L43">        }</span>
+<span class="nc" id="L44">    }</span>
+
+    NodeData newRootNodeData(Type t, Caller c) {
+<span class="nc" id="L47">        return new NodeData(</span>
+<span class="nc" id="L48">            t.metadata().qualifiedName(),</span>
+<span class="nc" id="L49">            c.metadata().label(),</span>
+<span class="nc" id="L50">            c.metadata().methodQualifiedSignature(),</span>
+<span class="nc" id="L51">            c.metadata().methodSignature());</span>
+    }
+
+    void build(Node&lt;NodeData&gt; n, Caller caller, int depth) {
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        if (depth &gt;= MAX_DEPTH) {</span>
+<span class="nc" id="L56">            return;</span>
+        }
+
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        for (var callee : caller.callees()) {</span>
+<span class="nc" id="L60">            build(n, callee, depth);</span>
+<span class="nc" id="L61">            buildForSubclasses(n, callee, depth);</span>
+<span class="nc" id="L62">        }</span>
+<span class="nc" id="L63">    }</span>
+
+    void build(Node&lt;NodeData&gt; n, Callee callee, int depth) {
+<span class="nc" id="L66">        var mqs = callee.methodQualifiedSignature();</span>
+
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        if (mqs.value().isEmpty()) {</span>
+<span class="nc" id="L69">            return;</span>
+        }
+
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        if (n.findAncestor(c -&gt; c.data().methodQualifiedSignature().equals(mqs)) != null) {</span>
+<span class="nc" id="L73">            return;</span>
+        }
+
+<span class="nc" id="L76">        var cn = n.add(newNodeData(callee));</span>
+
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        if (!methodQualifiedSignatureCallerMap.containsKey(mqs)) {</span>
+<span class="nc" id="L79">            return;</span>
+        }
+
+<span class="nc" id="L82">        build(cn, methodQualifiedSignatureCallerMap.get(mqs), depth + 1);</span>
+<span class="nc" id="L83">    }</span>
+
+    NodeData newNodeData(Callee c) {
+<span class="nc" id="L86">        return new NodeData(</span>
+<span class="nc" id="L87">            c.typeQualifiedName(),</span>
+<span class="nc" id="L88">            c.methodQualifiedSignature().asCallerLabel(),</span>
+<span class="nc" id="L89">            c.methodQualifiedSignature(),</span>
+<span class="nc" id="L90">            c.methodSignature());</span>
+    }
+
+    void buildForSubclasses(Node&lt;NodeData&gt; n, Callee callee, int depth) {
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        if (!subclassMap.containsKey(callee.typeQualifiedName())) {</span>
+<span class="nc" id="L95">            return;</span>
+        }
+
+<span class="nc bnc" id="L98" title="All 2 branches missed.">        for (var tqn : subclassMap.get(callee.typeQualifiedName())) {</span>
+<span class="nc" id="L99">            buildForSubclasses(n, tqn, callee.methodSignature(), depth);</span>
+<span class="nc" id="L100">        }</span>
+<span class="nc" id="L101">    }</span>
+
+    void buildForSubclasses(Node&lt;NodeData&gt; n, TypeQualifiedName tqn, MethodSignature ms, int depth) {
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        if (!typeQualifiedNameMethodSignatureCallerMap.containsKey(tqn, ms)) {</span>
+<span class="nc" id="L105">            return;</span>
+        }
+
+<span class="nc" id="L108">        var caller = typeQualifiedNameMethodSignatureCallerMap.get(tqn, ms);</span>
+
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (n.findAncestor(c -&gt; c.data().methodQualifiedSignature().equals(caller.metadata().methodQualifiedSignature())) != null) {</span>
+<span class="nc" id="L111">            return;</span>
+        }
+
+<span class="nc" id="L114">        var cn = n.add(newNodeDataForSubclass(tqn, caller));</span>
+<span class="nc" id="L115">        build(cn, caller, depth + 1);</span>
+<span class="nc" id="L116">    }</span>
+
+    NodeData newNodeDataForSubclass(TypeQualifiedName tqn, Caller c) {
+<span class="nc" id="L119">        return new NodeData(</span>
+            tqn,
+<span class="nc" id="L121">            c.metadata().methodQualifiedSignature().asCallerLabel(),</span>
+<span class="nc" id="L122">            c.metadata().methodQualifiedSignature(),</span>
+<span class="nc" id="L123">            c.metadata().methodSignature());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
