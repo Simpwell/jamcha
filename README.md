@@ -72,8 +72,5 @@ $ java -cp target/jamcha-0.0.1-all.jar jp.co.tdc.jamcha.cmd.Main \
 出力ファイルを格納するディレクトリを指定してください。
 ディレクトリが存在しない場合は自動的に作成します。
 
-## 制限事項
-
--   [JavaParser] の TypeSolver が未対応のため `var` 変数のメソッド呼び出し階層を出力することができません。
 
 [javaparser]: https://github.com/javaparser/javaparser
