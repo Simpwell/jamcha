@@ -1,6 +1,0 @@
-typeQualifiedName,callerLabel,descendantMethodQualifiedSignature,route
-com.example.demo.controller.TaskController,"com.example.demo.controller.TaskController.listTasks(org.springframework.ui.Model, java.lang.String)",java.lang.String.equals(java.lang.Object),
-com.example.demo.controller.TaskController,"com.example.demo.controller.TaskController.listTasks(org.springframework.ui.Model, java.lang.String)","org.springframework.ui.Model.addAttribute(java.lang.String, java.lang.Object)",
-com.example.demo.controller.TaskController,"com.example.demo.controller.TaskController.searchTasks(java.lang.String, org.springframework.ui.Model)","org.springframework.ui.Model.addAttribute(java.lang.String, java.lang.Object)",
-com.example.demo.controller.TaskController,"public String createTask(@Valid @ModelAttribute(""task"") Task task, BindingResult result, RedirectAttributes attributes)",org.springframework.validation.Errors.hasErrors(),
-com.example.demo.controller.TaskController,"public String updateTask(@PathVariable Long id, @Valid @ModelAttribute(""task"") Task task, BindingResult result, RedirectAttributes attributes)",org.springframework.validation.Errors.hasErrors(),

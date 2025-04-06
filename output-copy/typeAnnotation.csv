@@ -1,4 +1,0 @@
-name,typePackageName,typeQualifiedName,typeName,typeBeginLine,typeBeginColumn,typeAnnotationExpr
-TaskController.java,com.example.demo.controller,com.example.demo.controller.TaskController,TaskController,15,1,@Controller
-TaskController.java,com.example.demo.controller,com.example.demo.controller.TaskController,TaskController,15,1,"@RequestMapping(""/tasks"")"
-IndexController.java,com.example.demo.controller,com.example.demo.controller.IndexController,IndexController,6,1,@Controller
