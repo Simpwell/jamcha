@@ -1,8 +1,0 @@
-version: "3"
-services:
-  jamcha:
-    image: ghcr.io/tdc-yamada-ya/jamcha
-    volumes:
-      - "./examples/basic/src:/src"
-      - "./examples/basic/.reports:/reports"
-    command: "-i /src -s /src -o /reports"

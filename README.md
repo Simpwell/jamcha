@@ -25,13 +25,16 @@ Java ソースコードを解析してメソッドの呼び出し階層を再帰
 
 ## ビルド
 
-`gradle shadowJar` で依存関係を含む jar ファイルを作成してください。
-jar ファイルは `build/libs` ディレクトリに出力されます。
+`./mvnw package` で依存関係を含む jar ファイルを作成してください。
+jar ファイルは `target` ディレクトリに出力されます。
+
+- 通常のJAR: `target/jamcha-0.0.1.jar`
+- 依存関係を含むfat JAR: `target/jamcha-0.0.1-all.jar`
 
 ## 実行
 
 ```bash
-$ java -cp build/libs/jamcha-0.0.1-all.jar \
+$ java -cp target/jamcha-0.0.1-all.jar jp.co.tdc.jamcha.cmd.Main \
   -i "解析ソースディレクトリ1" "解析ソースディレクトリ2" ... "解析ソースディレクトリn" \
   -s "依存ソースディレクトリ1" "依存ソースディレクトリ2" ... "依存ソースディレクトリn" \
   -l "依存ライブラリディレクトリ1" "依存ライブラリディレクトリ2" ... "依存ライブラリディレクトリn" \
@@ -57,34 +60,6 @@ $ java -cp build/libs/jamcha-0.0.1-all.jar \
 **出力ディレクトリ**
 出力ファイルを格納するディレクトリを指定してください。
 ディレクトリが存在しない場合は自動的に作成します。
-
-## Docker 実行
-
-[GitHub Container Registry](https://github.com/users/tdc-yamada-ya/packages/container/package/jamcha) にてこのツールのイメージを公開しています。
-
-以下の例は最新版 (`latest` タグ) を使用します。
-常に最新版を使用する場合は事前に `docker pull ghcr.io/tdc-yamada-ya/jamcha` を実行してください。
-安定版を使用する場合は `ghcr.io/tdc-yamada-ya/jamcha:main` を指定してください。
-
-```bash
-$ docker run \
-  -v "/path/to/src:/src" \
-  -v "/path/to/libs:/libs" \
-  -v "/path/to/reports:/reports" \
-  ghcr.io/tdc-yamada-ya/jamcha \
-  -i /src \
-  -s /src \
-  -l /libs \
-  -o /reports
-```
-
-解析対象が巨大なために JVM メモリが不足する場合は `docker run` のオプションに
-[`--entrypoint`](https://docs.docker.com/engine/reference/run/#entrypoint-default-command-to-execute-at-runtime)
-を指定して、JVM メモリを拡張してください。
-
-```bash
---entrypoint "java -Xmx2048m -cp ./jamcha.jar jp.co.tdc.jamcha.cmd.Main"
-```
 
 ## 制限事項
 
